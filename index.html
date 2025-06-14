@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motion Detector PRD Project</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+<body>
+    <section id="section1" class="home">
+        <div class="home-content">
+            <h1>MOVERE</h1>
+            <h3>Otomatisasi Penyalaan Lampu Untuk Penghematan Energi berbasis IoT</h3>
+            <button onclick="scrollToSection('section2')" class="btn">Mulai Monitoring!</button>
+            <button onclick="scrollToSection('section3')" class="btn">About Us</button>
+        </div>
+    </section>
+
+    <section id="section2" class="monitoring">
+        <div class="monitoring-controls">
+            <label for="channelId">Channel ID:</label>
+            <input type="text" id="channelId" placeholder="Misal: 2989781">
+            
+            <label for="apiKey">Read API Key:</label>
+            <input type="text" id="apiKey" placeholder="Misal: 77WP7UUUJV36POO1">
+            
+            <button onclick="startMonitoring()" class="btn">Mulai Monitoring</button>
+        </div>
+    
+        <div class="monitoring-status">
+            <h3>Status Deteksi Gerakan Terbaru:</h3>
+            <h2 id="motionStatus">Belum dimulai</h2>
+        </div>
+    </section>
+
+<section id="section3" class="about">
+    <h2>About Us</h2>
+    <div class="team-members">
+        <div class="member">
+            <img src="images/krisna.jpg" alt="Team Member">
+            <p>Made Krisna Kusuma Wijaya</p>
+        </div>
+        <div class="member">
+            <img src="images/daniel.jpg" alt="Team Member">
+            <p>Daniel Arrigo Manurung</p>
+        </div>
+        <div class="member">
+            <img src="images/dani.jpg" alt="Team Member">
+            <p>Laurensius Dani Rendragaha</p>
+        </div>
+        <div class="member">
+            <img src="images/jeko.jpg" alt="Team Member">
+            <p>Jacko Luciano</p>
+        </div>
+        <div class="member">
+            <img src="images/kenneth.jpg" alt="Team Member">
+            <p>Kenneth Moses Saragih</p>
+        </div>
+    </div>
+</section>
+
+    <script>
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        let intervalId = null;
+
+        function startMonitoring() {
+            const channelId = document.getElementById("channelId").value.trim();
+            const apiKey = document.getElementById("apiKey").value.trim();
+
+            if (!channelId || !apiKey) {
+                alert("Mohon isi Channel ID dan API Key terlebih dahulu.");
+                return;
+            }
+
+            const url = `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=1`;
+
+            function fetchData() {
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        const latestData = data.feeds[0]?.field2;
+                        if (latestData === undefined) {
+                            document.getElementById("motionStatus").innerText = "Data tidak ditemukan di field2.";
+                        } else {
+                            document.getElementById("motionStatus").innerText = 
+                                latestData === "1" ? "Motion Detected!" : "No Motion Detected";
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching data:", error);
+                        document.getElementById("motionStatus").innerText = "Gagal mengambil data.";
+                    });
+            }
+
+            if (intervalId !== null) {
+                clearInterval(intervalId);
+            }
+
+            fetchData();
+            intervalId = setInterval(fetchData, 10000);
+        }
+    </script>
+</body>
+</html>
